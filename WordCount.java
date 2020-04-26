@@ -20,35 +20,58 @@ public class WordCount {
     public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter)
         throws IOException {
       String line = value.toString();
+      StringTokenizer tokenizer = new StringTokenizer(line);
 
-      if (line.length() > 0 && line.charAt(0) == 'T') {
-        // We have a time entry, tokenize it.
-        StringTokenizer tokenizer = new StringTokenizer(line);
-        if (tokenizer.hasMoreTokens()) {
-          tokenizer.nextToken(); // skip over 'T'
-          tokenizer.nextToken(); // skip over date
+      if (line.length() > 0) {
+        switch (line.charAt(0)) {
+          case 'T':
+            // We have a time entry, tokenize it.
+            if (tokenizer.hasMoreTokens()) {
+              tokenizer.nextToken(); // skip over 'T'
+              tokenizer.nextToken(); // skip over date
 
-          // match for time.
-          String recordTime = tokenizer.nextToken();
-          Matcher m = pTime.matcher(recordTime);
-          if (m.matches()) {
-            word.set("" + m.group(1));
-            output.collect(word, one);
-          }
+              // match for time.
+              String recordTime = tokenizer.nextToken();
+              Matcher m = pTime.matcher(recordTime);
+              if (m.matches())
+              {
+                word.set("" + m.group(1));
+                output.collect(word, one);
+              }
+            }
+            break;
+
+          case 'W':
+            while (tokenizer.hasMoreTokens()){
+              String token = tokenizer.nextToken().toLowerCase();
+              if (token.startsWith("sleep")) {
+                  if (token.length() > 5)
+                  {
+                    Character c = token.charAt(5);
+                    if (c >= 'a' && c <= 'z')
+                    {
+                      break;
+                    }
+                  }
+                  word.set(token);
+                  output.collect(word, one);
+                }
+              }
+            break;
+            }
         }
-      }
     }
   }
 
-  public static class Reduce extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
-    public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output,
-        Reporter reporter) throws IOException {
-      int sum = 0;
-      while (values.hasNext()) {
-        sum += values.next().get();
-      }
-      output.collect(key, new IntWritable(sum));
+public static class Reduce extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
+  public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output,
+      Reporter reporter) throws IOException {
+    int sum = 0;
+    while (values.hasNext()) {
+      sum += values.next().get();
     }
+    output.collect(key, new IntWritable(sum));
+  }
   }
 
   public static void main(String[] args) throws Exception {
