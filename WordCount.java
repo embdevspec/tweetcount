@@ -2,6 +2,7 @@
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.*;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
@@ -14,13 +15,29 @@ public class WordCount {
    public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
      private final static IntWritable one = new IntWritable(1);
      private Text word = new Text();
+     private Pattern pTime = Pattern.compile("(\\d+):(\\d+):(\\d+)");
 
      public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
        String line = value.toString();
-       StringTokenizer tokenizer = new StringTokenizer(line);
-       while (tokenizer.hasMoreTokens()) {
-         word.set(tokenizer.nextToken());
-         output.collect(word, one);
+
+       if (line.length() > 0 && line.charAt(0) == 'T')
+       {
+         // We have a time entry, tokenize it.
+         StringTokenizer tokenizer = new StringTokenizer(line);
+         if (tokenizer.hasMoreTokens())
+         {
+           tokenizer.nextToken(); // skip over 'T'
+           tokenizer.nextToken(); // skip over date
+           
+           // match for time.
+           String recordTime = tokenizer.nextToken();
+            Matcher m = pTime.matcher(recordTime);
+            if (m.matches())
+            {
+             word.set("" + m.group(1));
+             output.collect(word, one);
+            }
+         }
        }
      }
    }
