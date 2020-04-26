@@ -1,0 +1,1 @@
+docker run -it --volume c:\Users\paul\shared:/mnt/shared sequenceiq/hadoop-docker /etc/bootstrap.sh -bash
