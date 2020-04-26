@@ -10,7 +10,18 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
 
-public class WordCount {
+// public class TweetReader extends RecordReader {
+
+// }
+
+// public class TweetFileInputFormat extends FileInputFormat {
+//   public RecordReader createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException,
+//     InterruptedException {
+//       return new TweetReader();
+//     }
+// }
+
+public class TweetParse {
 
   public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
     private final static IntWritable one = new IntWritable(1);
@@ -75,7 +86,7 @@ public static class Reduce extends MapReduceBase implements Reducer<Text, IntWri
   }
 
   public static void main(String[] args) throws Exception {
-    JobConf conf = new JobConf(WordCount.class);
+    JobConf conf = new JobConf(TweetParse.class);
     conf.setJobName("wordcount");
 
     conf.setOutputKeyClass(Text.class);
