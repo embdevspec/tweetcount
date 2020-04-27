@@ -144,23 +144,6 @@ public class TweetParse {
     }
 
     /**
-     * Like the corresponding method of the InputFormat class, this is an optional
-     * method used by the framework for metrics gathering.
-     */
-    @Override
-    public float getProgress() throws IOException, InterruptedException {
-      if (start == end) {
-        return 0.0f;
-      } else {
-        return Math.min(1.0f, (pos - start) / (float) (end - start));
-      }
-    }
-
-    public Text getCurrentValue() throws IOException, InterruptedException {
-      return new Text(timeValue + tweetValue);
-    }
-
-    /**
      * Like the corresponding method of the InputFormat class, this reads a single
      * key/ value pair and returns true until the data is consumed.
      */
@@ -225,6 +208,12 @@ public class TweetParse {
       }
     }
 
+    public void close() throws IOException {
+      if (in != null) {
+        in.close();
+      }
+    }
+
     /**
      * This methods are used by the framework to give generated key/value pairs to
      * an implementation of Mapper. Be sure to reuse the objects returned by these
@@ -235,11 +224,24 @@ public class TweetParse {
       return key;
     }
 
-    public void close() throws IOException {
-      if (in != null) {
-        in.close();
+    public Text getCurrentValue() throws IOException, InterruptedException {
+      return new Text(timeValue + tweetValue);
+    }
+
+
+    /**
+     * Like the corresponding method of the InputFormat class, this is an optional
+     * method used by the framework for metrics gathering.
+     */
+    @Override
+    public float getProgress() throws IOException, InterruptedException {
+      if (start == end) {
+        return 0.0f;
+      } else {
+        return Math.min(1.0f, (pos - start) / (float) (end - start));
       }
     }
+
 
   }
 
