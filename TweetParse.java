@@ -17,7 +17,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-// import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.util.*;
 
 public class TweetParse {
@@ -178,28 +178,6 @@ public class TweetParse {
 
   }
 
-  // abstract public static class TweetFileInputFormat extends FileInputFormat {
-  // private static TweetReader reader;
-  // public TweetFileInputFormat(){reader = new TweetReader();};
-  // public RecordReader<LongWritable, Text> createRecordReader(InputSplit split,
-  // TaskAttemptContext context) throws IOException {
-  // return reader;
-  // }
-
-  // // public RecordReader<LongWritable, Text> getRecordReader(InputSplit s,
-  // JobConf c, Reporter r) throws java.io.IOException {
-  // // }
-  // }
-
-  // public class TweetFileInputFormat extends FileInputFormat {
-  // @Override
-  // public RecordReader<LongWritable, Text> createRecordReader(InputSplit split,
-  // TaskAttemptContext context)
-  // throws IOException {
-  // return new TweetReader();
-  // }
-  // }
-
   public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
     private final static IntWritable one = new IntWritable(1);
     private Text word = new Text();
@@ -268,6 +246,8 @@ public class TweetParse {
     JobConf conf = new JobConf(TweetParse.class);
     conf.setJobName("wordcount");
 
+    boolean useTweetReader = false;
+
     conf.setOutputKeyClass(Text.class);
     conf.setOutputValueClass(IntWritable.class);
 
@@ -275,12 +255,24 @@ public class TweetParse {
     conf.setCombinerClass(Reduce.class);
     conf.setReducerClass(Reduce.class);
 
-    conf.setInputFormat(TextInputFormat.class);
+    if (!useTweetReader)
+    {
+      conf.setInputFormat(TextInputFormat.class);
+    }
+    else
+    {
+      // conf.setInputFormat(TweetFileInputFormat.class);
+    }
     conf.setOutputFormat(TextOutputFormat.class);
-    // conf.setInputFormat(TweetFileInputFormat.class);
 
-    FileInputFormat.setInputPaths(conf, new Path(args[0]));
-    // TweetFileInputFormat.setInputPaths(conf, new Path(args[0]));
+    if (!useTweetReader)
+    {
+      FileInputFormat.setInputPaths(conf, new Path(args[0]));
+    }
+    else
+    {
+      // TweetFileInputFormat.setInputPaths(conf, new Path(args[0]));
+    }
     FileOutputFormat.setOutputPath(conf, new Path(args[1]));
 
     JobClient.runJob(conf);
